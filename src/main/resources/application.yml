@@ -7,6 +7,10 @@ spring:
       driver-class-name: org.mariadb.jdbc.Driver
       username: root
       password: 1q2w3e4r5t
+
+elasticsearch:
+  host: localhost
+  port: 9200
 #  batch:
 #    job:
 #      names: ${job.name:NONE}
