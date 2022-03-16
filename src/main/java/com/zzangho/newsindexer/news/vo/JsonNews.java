@@ -1,6 +1,5 @@
 package com.zzangho.newsindexer.news.vo;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.zzangho.newsindexer.common.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Data;

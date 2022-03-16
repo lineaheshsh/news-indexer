@@ -11,6 +11,9 @@ spring:
 elasticsearch:
   host: localhost
   port: 9200
+bulk:
+  dir: /Users/zzangho/data/bulk/news
+  file-name: news_bulk.json
 #  batch:
 #    job:
 #      names: ${job.name:NONE}

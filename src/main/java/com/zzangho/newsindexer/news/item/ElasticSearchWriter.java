@@ -4,12 +4,10 @@ import com.zzangho.newsindexer.common.Constants;
 import com.zzangho.newsindexer.news.vo.JsonNews;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHost;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.batch.item.ItemWriter;
@@ -19,12 +17,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
+@AllArgsConstructor
 @Slf4j
 public class ElasticSearchWriter implements ItemWriter<JsonNews> {
 
+    private RestHighLevelClient restHighLevelClient;
+
     @Override
     public void write(List<? extends JsonNews> items) throws Exception {
-        RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
         BulkRequest bulkRequest = new BulkRequest();
 
         LocalDate now = LocalDate.now();
@@ -53,14 +53,12 @@ public class ElasticSearchWriter implements ItemWriter<JsonNews> {
             bulkRequest.add(indexRequest);
         }
 
-        BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        BulkResponse bulkResponse = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
 
         if (bulkResponse.hasFailures()) {
             log.info("Full Indexing Fail! - " + bulkResponse.buildFailureMessage());
         } else {
-            log.info("Full Indexing Success! - " + bulkResponse.toString());
+            log.info("Full Indexing Success! - " + bulkResponse.getItems().toString());
         }
-
-        client.close();
     }
 }

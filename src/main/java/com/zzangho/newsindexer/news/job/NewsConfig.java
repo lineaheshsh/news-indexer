@@ -12,6 +12,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -24,15 +25,21 @@ public class NewsConfig {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
     private final TaskExecutor taskExecutor;
-    private final RestHighLevelClient elasticSearchClient;
+    private final RestHighLevelClient restHighLevelClient;
 
     private int chunkSize = 1000;
 
-    public NewsConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, TaskExecutor taskExecutor, RestHighLevelClient elasticSearchClient) {
+    @Value("${bulk.dir}")
+    private String dir;
+
+    @Value("${bulk.file-name}")
+    private String fileName;
+
+    public NewsConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, TaskExecutor taskExecutor, RestHighLevelClient restHighLevelClient) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.taskExecutor = taskExecutor;
-        this.elasticSearchClient = elasticSearchClient;
+        this.restHighLevelClient = restHighLevelClient;
     }
 
     @Bean
@@ -49,7 +56,7 @@ public class NewsConfig {
         return stepBuilderFactory.get(Constants.NEWS_JOB + "Step")
                 .<JsonNews, JsonNews>chunk(chunkSize)
                 .reader(itemReader())
-                .writer(new ElasticSearchWriter())
+                .writer(new ElasticSearchWriter(restHighLevelClient))
                 .taskExecutor(taskExecutor)
                 .throttleLimit(8)
                 .build();
@@ -62,7 +69,7 @@ public class NewsConfig {
      */
     private FlatFileItemReader<JsonNews> itemReader() {
         FlatFileItemReader<JsonNews> itemReader = new FlatFileItemReader<>();
-        itemReader.setResource(new FileSystemResource(Constants.BULK_FILE));
+        itemReader.setResource(new FileSystemResource(dir + "/" + fileName));
         itemReader.setLineMapper((line, lineNumber) -> new JsonNews(line));
 
         return itemReader;
