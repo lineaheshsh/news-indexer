@@ -1,6 +1,7 @@
 package com.zzangho.newsindexer.news.job;
 
 import com.zzangho.newsindexer.common.Constants;
+import com.zzangho.newsindexer.news.item.CreateIndexTasklet;
 import com.zzangho.newsindexer.news.item.ElasticSearchWriter;
 import com.zzangho.newsindexer.news.listener.NewsIndexerJobExecutionListener;
 import com.zzangho.newsindexer.news.vo.JsonNews;
@@ -46,11 +47,27 @@ public class NewsConfig {
     public Job newsIndexerJob() {
         return jobBuilderFactory.get(Constants.NEWS_JOB + "Job")
                 .incrementer(new RunIdIncrementer())
-                .start(newsIndexerStep())
+                .start(newsCreateIndexStep())
+                .next(newsIndexerStep())
                 .listener(new NewsIndexerJobExecutionListener())
                 .build();
     }
 
+    /**
+     * Index 생성하는 Step
+     * @return
+     */
+    @Bean
+    public Step newsCreateIndexStep() {
+        return stepBuilderFactory.get(Constants.NEWS_JOB + "CreateIndexStep")
+                .tasklet(new CreateIndexTasklet(restHighLevelClient))
+                .build();
+    }
+
+    /**
+     * Indexing 하는 Step
+     * @return
+     */
     @Bean
     public Step newsIndexerStep() {
         return stepBuilderFactory.get(Constants.NEWS_JOB + "Step")
