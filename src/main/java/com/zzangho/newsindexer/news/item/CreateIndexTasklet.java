@@ -1,6 +1,7 @@
 package com.zzangho.newsindexer.news.item;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -14,6 +15,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 @AllArgsConstructor
 public class CreateIndexTasklet implements Tasklet {
 
@@ -31,8 +33,12 @@ public class CreateIndexTasklet implements Tasklet {
                 .put("index.number_of_replicas", 0)
                 .put("index.routing.allocation.include.machine", "indexing"));
 
-        client.indices().create(request, RequestOptions.DEFAULT);
+        CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
+        if (createIndexResponse.isAcknowledged()) {
+            log.info("Create Index Success.");
+            return RepeatStatus.FINISHED;
+        }
 
-        return RepeatStatus.FINISHED;
+        return RepeatStatus.CONTINUABLE;
     }
 }
