@@ -4,6 +4,7 @@ import com.zzangho.newsindexer.common.Constants;
 import com.zzangho.newsindexer.news.vo.JsonNews;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -58,7 +59,9 @@ public class ElasticSearchWriter implements ItemWriter<JsonNews> {
         if (bulkResponse.hasFailures()) {
             log.info("Full Indexing Fail! - " + bulkResponse.buildFailureMessage());
         } else {
-            log.info("Full Indexing Success! - " + bulkResponse.getItems().toString());
+            for (BulkItemResponse response : bulkResponse.getItems()) {
+                log.info("Full Indexing Success! - " + response.getResponse().toString());
+            }
         }
     }
 }
