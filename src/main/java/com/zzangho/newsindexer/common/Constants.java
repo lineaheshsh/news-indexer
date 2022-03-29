@@ -16,4 +16,6 @@ public class Constants {
 
     public final static String BULK_FILE = "news_bulk.json";
     public final static String NEWS_JOB = "newsIndexer";
+
+    private Constants() {}
 }
